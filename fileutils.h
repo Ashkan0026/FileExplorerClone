@@ -15,6 +15,8 @@ namespace fileutils
     bool IsDestSubOfSrc(QString dest, QString src);
 
     bool FileExists(QString file_path);
+
+    QString GetFileName(const QString& path);
 }
 
 namespace copy_helper
@@ -27,6 +29,8 @@ namespace copy_helper
 namespace directory_utils
 {
     bool CreateDir(const QString& dir_path);
+
+    bool IsDirectory(const QString& path);
 }
 
 

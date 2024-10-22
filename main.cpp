@@ -6,9 +6,11 @@
 #include <QString>
 #include <QSet>
 #include <QFileInfo>
+#include <QStringList>
 #include <QDirIterator>
 #include "fileutils.h"
 #include "converter.h"
+#include "copy.h"
 
 int main(int argc, char *argv[])
 {
@@ -16,13 +18,11 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.show();
 
-    QString path = "A:\\courses\\C++";
+    QStringList selecteds = {"A:\\courses\\C++\\Videos"};
+    QString destination = "C:\\Users\\Ashkan\\Documents\\temp";
 
-    qint64 sizes = copy_helper::PreCalculateEntrySize(path);
-    qDebug() << "Sub of " << path << " sizes: " << sizes << '\n';
-    qint64 gigabyte = size_converter::ExtractGigabytes(sizes);
-    qDebug() << "Size in gigabyte: " << gigabyte;
-
+    CopyOperation copy_operation(selecteds, destination, 0);
+    copy_operation.start_copying();
 
     return a.exec();
 }

@@ -4,14 +4,15 @@
 #include <QString>
 #include <QDebug>
 #include <QThread>
+#include <QStringList>
 
-class CopyOperation
+class CopyOperation : QObject
 {
     Q_OBJECT
 public:
-    CopyOperation(QString source_path, QString dest_path, qint64 total_size);
+    CopyOperation(QStringList sources, QString dest_path, qint64 total_size);
 
-    ~CopyOperation();
+    virtual ~CopyOperation();
 
     void StartTheOperation();
 
@@ -27,13 +28,15 @@ public slots:
 
 
 private:
-    QString source_path;
+    QStringList sources;
     QString dest_path;
     qint64 total_size;
 
     bool CopyDirectory(const QString& src_path, const QString& dst_path);
 
     bool CopyFile(const QString& file_source_path, const QString& file_dest_path);
+
+    QString CreateDestDirectory(const QString& src_path, const QString& dest_path);
 
 };
 

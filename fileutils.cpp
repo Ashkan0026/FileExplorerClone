@@ -26,7 +26,7 @@ qint64 fileutils::CalculateFileSizes(QList<QString>& file_paths) {
         size.HighPart = 0;
         HANDLE h_file = CreateFileW(path.toStdWString().c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
         if(h_file == NULL || h_file == INVALID_HANDLE_VALUE) {
-            qDebug() << "Cannot open " << path;
+            qDebug() << "Cannot open " << path << ", Error: " << GetLastError() << '\n';
             continue;
         }
         GetFileSizeEx(h_file, &size);
@@ -34,6 +34,12 @@ qint64 fileutils::CalculateFileSizes(QList<QString>& file_paths) {
         CloseHandle(h_file);
     }
     return file_size;
+}
+
+QString fileutils::GetFileName(const QString& path)
+{
+    QFileInfo info(path);
+    return info.fileName();
 }
 
 bool fileutils::IsDestSubOfSrc(QString dest, QString src)
@@ -96,7 +102,13 @@ namespace directory_utils
 {
     bool CreateDir(const QString& directory_path)
     {
-        bool res = CreateDirectoryW(directory_path.toStdWString().c_str(), NULL) == TRUE ? true : false;
-        return res;
+        BOOL res = CreateDirectoryW(directory_path.toStdWString().c_str(), NULL);
+        return res == TRUE;
+    }
+
+    bool IsDirectory(const QString& path)
+    {
+        QFileInfo info(path);
+        return info.isDir();
     }
 }
