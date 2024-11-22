@@ -6,7 +6,7 @@
 #include <QThread>
 #include <QStringList>
 
-class CopyOperation : QObject
+class CopyOperation : public QObject
 {
     Q_OBJECT
 public:
@@ -17,20 +17,24 @@ public:
     void StartTheOperation();
 
 signals:
-    void copy_started(const QString& source, const QString& dest, const qint64& total_size);
+    void copy_started(const QStringList& source, const QString& dest, const qint64& total_size);
 
     void copy_progress(const qint64& bytes_copied);
 
-    void file_copy_ended(const QString& filePath);
+    void new_file_copy(const QString& filename);
+
+    void copy_operation_ended();
 
 public slots:
     void start_copying();
 
+    void cancel_copy_operation();
 
 private:
     QStringList sources;
     QString dest_path;
     qint64 total_size;
+    bool cancel;
 
     bool CopyDirectory(const QString& src_path, const QString& dst_path);
 

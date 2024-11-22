@@ -61,7 +61,7 @@ bool fileutils::FileExists(QString file_path)
     return false;
 }
 
-qint64 copy_helper::PreCalculateEntrySize(QString file_path)
+qint64 copy_helper::PreCalculateEntrySize(const QString& file_path)
 {
     QList<QString> files;
     FindFilesRecursively(file_path, files);
@@ -69,7 +69,7 @@ qint64 copy_helper::PreCalculateEntrySize(QString file_path)
     return sizes;
 }
 
-void copy_helper::FindFilesRecursively(QString current_path, QList<QString>& files)
+void copy_helper::FindFilesRecursively(const QString& current_path, QList<QString>& files)
 {
     QFileInfo file_info(current_path);
     if(!file_info.isDir())
@@ -111,4 +111,14 @@ namespace directory_utils
         QFileInfo info(path);
         return info.isDir();
     }
+}
+
+qint64 copy_helper::PreCalculateEntriesSize(const QStringList& files)
+{
+    qint64 total_sizes = 0;
+    for(const QString& file : files)
+    {
+        total_sizes += PreCalculateEntrySize(file);
+    }
+    return total_sizes;
 }

@@ -7,19 +7,19 @@
 #include "fileutils.h"
 
 CopyOperation::CopyOperation(QStringList _sources, QString _dest_path, qint64 _total_size)
-    : sources(_sources), dest_path(_dest_path), total_size(_total_size)
+    : sources(_sources), dest_path(_dest_path), total_size(_total_size), cancel(false)
 {
 
 }
 
 CopyOperation::~CopyOperation()
 {
-
+    qDebug() << "CopyOperation Destructor";
 }
 
 void CopyOperation::StartTheOperation()
 {
-
+    start_copying();
 }
 
 bool CopyOperation::CopyFile(const QString &file_source_path, const QString &file_dest_path)
@@ -34,6 +34,7 @@ bool CopyOperation::CopyFile(const QString &file_source_path, const QString &fil
     {
         return false;
     }
+    emit new_file_copy(fileutils::GetFileName(file_source_path));
     const size_t buffer_length = 16348;
     char buffer[buffer_length];
     memset(buffer, 0, buffer_length);
@@ -41,8 +42,9 @@ bool CopyOperation::CopyFile(const QString &file_source_path, const QString &fil
     do
     {
         readed = reader.read(buffer, buffer_length);
-        writer.write(buffer, readed);
-    } while(!reader.atEnd() && readed > 0);
+        qint64 written = writer.write(buffer, readed);
+        emit copy_progress(written);
+    } while(!reader.atEnd() && readed > 0 && !cancel);
 
     reader.close();
     writer.close();
@@ -74,7 +76,6 @@ bool CopyOperation::CopyDirectory(const QString &src_path, const QString &dst_pa
             continue;
         }
         QString new_dest_path = new_dest + "\\" + fileutils::GetFileName(current_source_path);
-        qDebug() << new_dest_path << '\n' << current_source_path << '\n';
         if(directory_utils::IsDirectory(current_source_path))
         {
             if(!directory_utils::CreateDir(new_dest_path))
@@ -89,7 +90,7 @@ bool CopyOperation::CopyDirectory(const QString &src_path, const QString &dst_pa
             CopyFile(current_source_path, new_dest_path);
         }
         not_to_visit.insert(current_source_path);
-    } while(iterator.hasNext());
+    } while(iterator.hasNext() && !cancel);
 
 
     return true;
@@ -97,10 +98,12 @@ bool CopyOperation::CopyDirectory(const QString &src_path, const QString &dst_pa
 
 void CopyOperation::start_copying()
 {
+    emit copy_started(sources, dest_path, total_size);
     for(const QString& source: sources)
     {
         CopyDirectory(source, dest_path);
     }
+    emit copy_operation_ended();
 }
 
 QString CopyOperation::CreateDestDirectory(const QString& src_path, const QString& dest_path)
@@ -114,4 +117,9 @@ QString CopyOperation::CreateDestDirectory(const QString& src_path, const QStrin
     }
     return dest_path;
 
+}
+
+void CopyOperation::cancel_copy_operation()
+{
+    this->cancel = true;
 }

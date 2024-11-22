@@ -18,6 +18,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     converter.cpp \
     copy.cpp \
+    copyprogress.cpp \
     fileutils.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -26,11 +27,13 @@ SOURCES += \
 HEADERS += \
     converter.h \
     copy.h \
+    copyprogress.h \
     fileutils.h \
     mainwindow.h \
     open.h
 
 FORMS += \
+    copyprogress.ui \
     mainwindow.ui
 
 # Default rules for deployment.

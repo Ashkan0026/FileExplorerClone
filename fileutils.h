@@ -21,9 +21,11 @@ namespace fileutils
 
 namespace copy_helper
 {
-    qint64 PreCalculateEntrySize(QString file_path);
+    qint64 PreCalculateEntrySize(const QString& file_path);
 
-    void FindFilesRecursively(QString current_path, QList<QString>& files);
+    qint64 PreCalculateEntriesSize(const QStringList& files);
+
+    void FindFilesRecursively(const QString& current_path, QList<QString>& files);
 }
 
 namespace directory_utils

@@ -9,6 +9,9 @@
 #include <QTreeView>
 #include <QItemSelection>
 #include <QModelIndex>
+#include <QStringList>
+#include "copy.h"
+#include "copyprogress.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -83,6 +86,7 @@ private:
     std::stack<QString> previous_paths;
     std::stack<QString> forward_paths;
     QList<QModelIndex> selected_indexes;
+    QStringList copy_selecteds;
     QString current_path;
     QString copy_cut_path;
     QString context_path;
@@ -119,5 +123,9 @@ private:
     QString ShowFileOrDirectory(int files, int dirs);
 
     QString SetFileSizesText(qint64 sizes, int files);
+
+    void CopyWorkerThreadAndCopyOperationConnections(QThread* thread, CopyOperation* copy_operation);
+
+    void CopyOperationAndUIConnections(CopyProgress* progressbar, CopyOperation* copy_operation);
 };
 #endif // MAINWINDOW_H

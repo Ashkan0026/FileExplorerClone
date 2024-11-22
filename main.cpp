@@ -21,8 +21,8 @@ int main(int argc, char *argv[])
     QStringList selecteds = {"A:\\courses\\C++\\Videos"};
     QString destination = "C:\\Users\\Ashkan\\Documents\\temp";
 
-    CopyOperation copy_operation(selecteds, destination, 0);
-    copy_operation.start_copying();
+    //CopyOperation copy_operation(selecteds, destination, 0);
+    //copy_operation.start_copying();
 
     return a.exec();
 }

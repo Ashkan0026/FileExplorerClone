@@ -269,10 +269,18 @@ int MainWindow::CreateContextListAndExecute(QString file_path) {
     connect(&open_action, &QAction::triggered, this, &MainWindow::OpenFileOnContextMenu);
 
     QAction copy_action("Copy", this);
-    //connect(&copy_action,);
+    connect(&copy_action, &QAction::triggered, this, &MainWindow::on_actionCopy_triggered);
     QAction cut_action("Cut", this);
 
-    QAction paste_action("Delete", this);
+    QAction paste_action("Paste", this);
+    if(copy_selecteds.size() > 0)
+    {
+        connect(&paste_action, &QAction::triggered, this, &MainWindow::on_actionPaste_triggered);
+    }
+    else
+    {
+        paste_action.setDisabled(true);
+    }
 
     context_menu.addAction(&open_action);
     context_menu.addAction(&copy_action);
@@ -337,7 +345,12 @@ void MainWindow::on_lineEdit_editingFinished()
 
 void MainWindow::on_actionCopy_triggered()
 {
-
+    // Getting the copy list
+    copy_selecteds.clear();
+    for(const QModelIndex& index : selected_indexes)
+    {
+        copy_selecteds.push_back(list_model->filePath(index));
+    }
 }
 
 void MainWindow::on_actionCut_triggered()
@@ -347,6 +360,19 @@ void MainWindow::on_actionCut_triggered()
 
 void MainWindow::on_actionPaste_triggered()
 {
+    qint64 total_size = copy_helper::PreCalculateEntriesSize(copy_selecteds);
+    qDebug() << "Copying " << total_size << " bytes";
+
+    CopyOperation* copy_operation = new CopyOperation(copy_selecteds, current_path, total_size);
+    QThread* copy_thread = new QThread(this);
+    CopyWorkerThreadAndCopyOperationConnections(copy_thread, copy_operation);
+
+    CopyProgress* progress_bar = new CopyProgress(this);
+    CopyOperationAndUIConnections(progress_bar, copy_operation);
+
+    copy_operation->moveToThread(copy_thread);
+    progress_bar->show();
+    copy_thread->start();
 
 }
 
@@ -355,4 +381,21 @@ void MainWindow::on_listView_customContextMenuRequested(const QPoint &pos)
     QModelIndex index = ui->listView->indexAt(pos);
     QString file_path = list_model->filePath(index);
     CreateContextListAndExecute(file_path);
+}
+
+void MainWindow::CopyWorkerThreadAndCopyOperationConnections(QThread *copy_thread, CopyOperation *copy_operation)
+{
+    connect(copy_operation, &CopyOperation::copy_operation_ended, copy_thread, &QThread::quit);
+    connect(copy_operation, &CopyOperation::copy_operation_ended, copy_operation, &CopyOperation::deleteLater);
+    connect(copy_thread, &QThread::finished, copy_thread, &QThread::deleteLater);
+    connect(copy_thread, &QThread::started, copy_operation, &CopyOperation::start_copying);
+}
+
+void MainWindow::CopyOperationAndUIConnections(CopyProgress* progressbar, CopyOperation* copy_operation)
+{
+    connect(copy_operation, &CopyOperation::copy_started, progressbar, &CopyProgress::copy_started);
+    connect(copy_operation, &CopyOperation::copy_progress, progressbar, &CopyProgress::copy_progress);
+    connect(copy_operation, &CopyOperation::new_file_copy, progressbar, &CopyProgress::new_file_copy);
+    connect(copy_operation, &CopyOperation::copy_operation_ended, progressbar, &CopyProgress::close);
+    connect(copy_operation, &CopyOperation::destroyed, progressbar, &CopyProgress::deleteLater);
 }
